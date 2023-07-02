@@ -1,69 +1,69 @@
-;Pseudocod:
-;-Declarare vector, tipul prelucrarii, numar linii si numa coloane
-;-Initializere stiva
-;-Apel subrutina
-;---Adaugare registre pe stiva
-;---Calculare lungime vector
-;---Selectarea tipului prelucrarii
-;---Prelucrarea vectorului
-;---Se scot din stiva valorile din registre
-;---Revenire din subprogram
-;-Iesire din program
+;Pseudocode:
+;-Vector declaration, processing type, number of lines and number of columns
+;-Stack initialization
+;-Subroutine call
+;---Adding registers to the stack
+;---Calculation of vector length
+;---Selection of the type of processing
+;---Vector processing
+;---The register values are removed from the stack
+;---Return from subroutine
+;-Exit the program
 
 section .data
-    matr db 23, 124, 245, 254 ;maxim 100x100 elemente cu valori intre 0 si 255, ultimul element sa fie 0
+    matr db 23, 124, 245, 254 ;maximum 100x100 elements with values between 0 and 255, the last element should be 0
     type db 1
-    n db 2 ; maxim 100
-    m db 2 ; maxim 100
-    matr_len db 0 ; variabila care va memora lungimea vectorului matr
+    n db 2 ; maximum 100
+    m db 2 ; maximum 100
+    matr_len db 0 ; the variable that will store the length of the matr vector
     N equ 100
 
 section .bss
-    stack resb N ; zona de memorie a stivei, initializata cu 100h de elemente 0
+    stack resb N ; the stack memory area, initialized with 100h of 0 elements
 
 section .text
     global _start
 
 _start:
-    ; apelam subrutina
+    ; Subroutine call
     call image_proc
     
     
-    ; iesim din program
-    mov eax, 1 ; setam eax la valoarea 1 (sys_exit)
-    mov ebx,0           ; iesim din cod
+    ; Exit the program
+    mov eax, 1 ; we set eax to the value 1 (sys_exit)
+    mov ebx,0           ; we exit the code
     int 0x80 ; call the kernel
 
 ; functie
 image_proc:
-    ;salvam pe stiva
+    ;save on the stack
     push ax
     push bx
     push cx
     push dx
 
-    ;salvam valoarea tipului funtiei in ch
+    ;we save the value of the function type in ch
     mov ch, [type]
 
-    ;initializam registrul ax cu 0
+    ;initialize the ax register with 0
     xor ax, ax
 
-    ;aflarea lungimii vectorului
-    mov dl, 0 ;setam registrul dl la 0
-    mov esi, matr ;memoram matr
+    ;finding the length of the vector
+    mov dl, 0 ;we set the dl register to 0
+    mov esi, matr ;we memorize matr
     matr_len_loop:
-        cmp byte [esi], 0 ; verificam daca elementul curent al vactorului este zero
-        je exit_loop ; daca primul element este zero, iesim din bucla
-        add esi, 1 ; incrementam SI pentru a pointa la urmatorul element din vector
-        inc dl ; incrementam contorizorul buclei
-        jmp matr_len_loop ; sarim inapoi la inceputul buclei
+        cmp byte [esi], 0 ; we check if the current element of the vector is zero
+        je exit_loop ; if the first element is zero, we exit the loop
+        add esi, 1 ; we increment SI to point to the next element in the vector
+        inc dl ; we increment the loop counter
+        jmp matr_len_loop ; we jump back to the beginning of the loop
     exit_loop:
         mov [matr_len], dl 
 
-    ;salvam matricea in si
+    ;we save the matrix in si
     mov esi, matr
 
-    ; verificam valoarea lui type
+    ; we check the value of type
     cmp ch, 0
     je conversie
     cmp ch, 1
@@ -72,57 +72,57 @@ image_proc:
     je comp_albe
 
     conversie:
-        mov al, [esi] ;valoarea actuala din matrice o salvam in al 
-        cmp al, 127 ;comparam valoarea
-        jbe negru ;daca este mai mica sau egala valoarea de la instructiunea urmatoare sarim
-        cmp al, 128 ;comparam valoarea
-        jae alb ;daca este mai mare sau egala valoarea de la instructiunea urmatoare sarim
+        mov al, [esi] ;we save the current value from the matrix in al
+        cmp al, 127 ;we compare the value
+        jbe negru ;if it is less than or equal to the value from the next instruction, we jump
+        cmp al, 128 ;we compare the value
+        jae alb ;if it is greater than or equal to the value from the next instruction, we jump
     negru:
-        mov al, 0 ;0 este valoarea pentru negru
+        mov al, 0 ;0 is the value for black
         mov [esi], al
-        inc esi ;trecem la urmatoarea valoare
-        dec byte  [matr_len] ;decrementam lungimea
-        jnz conversie ;revenim pentru a continua cu urmatoarele valori
+        inc esi ;we move to the next value
+        dec byte  [matr_len] ;we decrement the length
+        jnz conversie ;we return to continue with the following values
         jmp exit ; if no more values, exit function
     alb:
         mov al, 255 ; set al to 255 (white)
         mov [esi], al
         inc esi ; move to next element in vector
-        dec byte  [matr_len] ; ddecrementam lungimea vectorului
+        dec byte  [matr_len] ; we decrement the length of the vector
         jnz conversie ; jump back to start of loop if there are more values
-        jmp exit ;daca nu au mai ramas volori, iesim
+        jmp exit ;if there are no flights left, we exit
     
     comp_negre:
-        mov al, [esi]      ;valoarea actuala din matrice o salvam in al
-        cmp al, 30        ;comparam valoarea
-        jbe negru1        ;daca este mai mica sau egala valoarea de la instructiunea urmatoare sarim
-            inc esi        ;trecem la urmatoarea valoare
-            dec byte [matr_len] ; decrementam lungimea vectorului
-            jnz comp_negre   ;revenim pentru a continua cu urmatoarele valori
-            jmp exit      ;daca nu au mai ramas volori, iesim
+        mov al, [esi]      ;we save the current value from the matrix in al
+        cmp al, 30        ;we compare the value
+        jbe negru1        ;if it is less than or equal to the value from the next instruction, we jump
+            inc esi        ;we move to the next value
+            dec byte [matr_len] ; we decrement the length of the vector
+            jnz comp_negre   ;we return to continue with the following values
+            jmp exit      ;if there are no flights left, we exit
         negru1:
-            mov al, 0     ;0 este valoarea pentru negru
-            mov [esi], al ;salvam noua valoare in matrice
-            inc esi        ;trecem la urmatoarea valoare
-            dec byte [matr_len] ; decrementam lungimea vectorului
-            jnz comp_negre   ;revenim pentru a continua cu urmatoarele valori
-            jmp exit      ;daca nu au mai ramas volori, iesim
+            mov al, 0     ;0 is the value for black
+            mov [esi], al ;we save the new value in the matrix
+            inc esi        ;we move to the next value
+            dec byte [matr_len] ; we decrement the length of the vector
+            jnz comp_negre   ;we return to continue with the following values
+            jmp exit      ;if there are no flights left, we exit
             
     comp_albe:
-        mov al, [esi]      ;valoarea actuala din matrice o salvam in al
-        cmp al, 225       ;comparam valoarea
-        jae alb1          ;daca este mai mare sau egala valoarea de la instructiunea urmatoare sarim
-            inc esi        ;trecem la urmatoarea valoare
-            dec byte [matr_len] ; decrementam lungimea vectorului
-            jnz comp_albe ;revenim pentru a continua cu urmatoarele valori
-            jmp exit      ;daca nu au mai ramas volori, iesim
+        mov al, [esi]      ;we save the current value from the matrix in al
+        cmp al, 225       ;we compare the value
+        jae alb1          ;if it is greater than or equal to the value from the next instruction, we jump
+            inc esi        ;we move to the next value
+            dec byte [matr_len] ; we decrement the length of the vector
+            jnz comp_albe ;we return to continue with the following values
+            jmp exit      ;if there are no flights left, we exit
         alb1:
-            mov al, 255   ;255 este valoarea pentru alb
-            mov [esi], al ; stocam noua valoare in matrice
-            inc esi        ;trecem la urmatoarea valoare
-            dec byte [matr_len] ; decrementam lungimea vectorului
-            jnz comp_albe ;revenim pentru a continua cu urmatoarele valori
-            jmp exit      ;daca nu au mai ramas volori, iesim
+            mov al, 255   ;255 is the value for white
+            mov [esi], al ; we store the new value in the matrix
+            inc esi        ;we move to the next value
+            dec byte [matr_len] ; we decrement the length of the vector
+            jnz comp_albe ;we return to continue with the following values
+            jmp exit      ;if there are no flights left, we exit
             
     exit:
     pop ax
